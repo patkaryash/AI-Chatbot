@@ -121,9 +121,15 @@ async function broadcastAiReply(io, chat, chatId, userContent) {
 }
 
 export function initSocket(server) {
+  const allowedOrigins = [
+    'http://localhost:5173',
+    'https://ai-chatbot-iota-olive.vercel.app',
+    process.env.CLIENT_URL
+  ].filter(Boolean);
+
   const io = new Server(server, {
     cors: {
-      origin: process.env.CLIENT_URL || 'http://localhost:5173',
+      origin: allowedOrigins,
       credentials: true,
     },
   });

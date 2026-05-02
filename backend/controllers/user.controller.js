@@ -7,7 +7,7 @@ import { listDevelopersForUser } from '../services/chat.service.js';
 function setAuthCookie(res, token) {
   res.cookie('token', token, {
     httpOnly: true,
-    sameSite: 'lax',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     secure: process.env.NODE_ENV === 'production',
     maxAge: 24 * 60 * 60 * 1000,
   });
@@ -116,7 +116,11 @@ export const logoutController = async (req, res) => {
       await redisClient.set(token, 'logout', 'EX', 60 * 60 * 24);
     }
 
-    res.clearCookie('token');
+    res.clearCookie('token', {
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    });
     res.status(200).json({
       message: 'Logged out successfully',
     });

@@ -10,13 +10,20 @@ import mongoSanitize from 'express-mongo-sanitize';
 import { errorHandler } from './middleware/error.middleware.js';
 
 const app = express();
+app.set('trust proxy', 1); // Allow secure cookies behind reverse proxy
 
 connect();
 
 app.use(helmet());
 app.use(mongoSanitize());
+const allowedOrigins = [
+  'http://localhost:5173',
+  'https://ai-chatbot-iota-olive.vercel.app',
+  process.env.CLIENT_URL
+].filter(Boolean);
+
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:5173',
+  origin: allowedOrigins,
   credentials: true,
 }));
 app.use(morgan('dev'));

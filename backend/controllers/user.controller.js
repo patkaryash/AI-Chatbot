@@ -115,6 +115,28 @@ export const developersController = async (req, res) => {
   }
 };
 
+export const searchController = async (req, res) => {
+  try {
+    const { q } = req.query;
+    if (!q || typeof q !== 'string') {
+      return res.status(400).json({ error: 'Search query is required' });
+    }
+
+    // Search by username using regex, exclude current user
+    const users = await userModel.find({
+      name: { $regex: q, $options: 'i' },
+      _id: { $ne: req.user.id }
+    })
+    .select('name email')
+    .limit(20);
+
+    res.status(200).json({ users });
+  } catch (error) {
+    console.error('User search failed:', error.message);
+    res.status(400).json({ error: error.message });
+  }
+};
+
 export const logoutController = async (req, res) => {
   try {
     const token = getToken(req);

@@ -7,5 +7,7 @@ export function createSocket(token) {
     auth: { token },
     withCredentials: true,
     autoConnect: true,
+    reconnection: true,
+    transports: ["websocket", "polling"],
   });
 }

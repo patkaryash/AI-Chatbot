@@ -32,7 +32,7 @@ export async function generateChatReply(commandData, context = null) {
     };
   }
 
-  let systemPrompt = 'You are a concise interview-demo chatbot for a student mini project.';
+  let systemPrompt = 'You are a helpful AI assistant integrated into a developer chat platform. Keep your responses concise and helpful.';
   let promptText = commandData.payload;
 
   if (commandData.command === 'summarize') {

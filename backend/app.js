@@ -5,7 +5,9 @@ import morgan from 'morgan';
 import connect from './db/db.js';
 import chatRoutes from './routes/chat.routes.js';
 import userRoutes from './routes/user.routes.js';
+import requestRoutes from './routes/request.routes.js';
 import helmet from 'helmet';
+
 import mongoSanitize from 'express-mongo-sanitize';
 import { errorHandler } from './middleware/error.middleware.js';
 
@@ -33,6 +35,8 @@ app.use(cookieParser());
 
 app.use('/users', userRoutes);
 app.use('/chat', chatRoutes);
+app.use('/requests', requestRoutes);
+
 
 app.get('/', (_req, res) => {
   res.json({

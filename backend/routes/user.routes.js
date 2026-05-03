@@ -17,6 +17,7 @@ router.post('/register', [
 router.post('/login', authValidation, userController.loginController);
 router.get('/profile', authMiddleware.authUser, userController.profileController);
 router.get('/developers', authMiddleware.authUser, userController.developersController);
+router.get('/search', authMiddleware.authUser, userController.searchController);
 router.post('/logout', authMiddleware.authUser, userController.logoutController);
 
 export default router;

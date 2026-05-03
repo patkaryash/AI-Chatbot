@@ -1,6 +1,7 @@
 import jwt from 'jsonwebtoken';
 import { Server } from 'socket.io';
 import userModel from '../models/user.model.js';
+import Message from '../models/message.model.js';
 import {
   createAiMessage,
   createUserMessage,
@@ -133,6 +134,7 @@ export function initSocket(server) {
       origin: allowedOrigins,
       credentials: true,
     },
+    transports: ["websocket", "polling"],
   });
 
   io.use(authenticateSocket);
@@ -215,6 +217,34 @@ export function initSocket(server) {
         ack?.({ ok: true });
       } catch (error) {
         ack?.({ ok: false, error: error.message });
+      }
+    });
+
+    socket.on('messages:mark_delivered', async ({ messageIds, chatId }, ack) => {
+      try {
+        if (!messageIds || messageIds.length === 0) return ack?.({ ok: true });
+        await Message.updateMany(
+          { _id: { $in: messageIds }, status: 'sent', sender: { $ne: userId } },
+          { $set: { status: 'delivered' } }
+        );
+        socket.broadcast.to(chatRoom(chatId)).emit('messages:status_update', { messageIds, chatId, status: 'delivered' });
+        ack?.({ ok: true });
+      } catch (err) {
+        ack?.({ ok: false });
+      }
+    });
+
+    socket.on('messages:mark_read', async ({ messageIds, chatId }, ack) => {
+      try {
+        if (!messageIds || messageIds.length === 0) return ack?.({ ok: true });
+        await Message.updateMany(
+          { _id: { $in: messageIds }, status: { $in: ['sent', 'delivered'] }, sender: { $ne: userId } },
+          { $set: { status: 'read' } }
+        );
+        socket.broadcast.to(chatRoom(chatId)).emit('messages:status_update', { messageIds, chatId, status: 'read' });
+        ack?.({ ok: true });
+      } catch (err) {
+        ack?.({ ok: false });
       }
     });
 

@@ -709,7 +709,7 @@ const Home = () => {
 
         <div className="grid flex-1 gap-0 sm:gap-6 py-0 sm:py-2 lg:grid-cols-[22rem_minmax(0,1fr)] overflow-hidden min-h-0 px-0 sm:px-6">
           <aside className="flex min-h-0 flex-col rounded-none sm:rounded-xl border-0 sm:border border-subtle bg-surface overflow-hidden shadow-2xl">
-            <div className="shrink-0 border-b border-subtle p-4 relative bg-base/50 backdrop-blur-md">
+            <div className="shrink-0 border-b border-subtle p-4 relative bg-base/90 backdrop-blur-md z-50">
               <label className="text-[10px] font-bold uppercase tracking-widest text-text-muted font-mono" htmlFor="search">
                 Find developers
               </label>
@@ -720,8 +720,9 @@ const Home = () => {
                 <input
                   type="text"
                   id="search"
+                  autoComplete="off"
                   placeholder="Search by username..."
-                  className="w-full rounded-full border border-subtle bg-base/50 py-2 pl-9 pr-4 text-sm text-text-primary outline-none transition focus:border-accent focus:ring-1 focus:ring-accent placeholder:text-text-muted backdrop-blur-sm"
+                  className="w-full rounded-full border border-subtle bg-surface-hover py-2 pl-9 pr-4 text-sm text-white outline-none transition focus:border-accent focus:ring-1 focus:ring-accent placeholder:text-text-muted"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -729,7 +730,7 @@ const Home = () => {
 
               {/* Search Results Dropdown */}
               {searchQuery.trim().length >= 2 && (
-                <div className="absolute left-4 right-4 top-[95px] z-40 max-h-60 overflow-y-auto rounded-xl border border-subtle bg-surface shadow-2xl backdrop-blur-md animate-fade-in">
+                <div className="absolute left-4 right-4 top-[95px] z-50 max-h-60 overflow-y-auto rounded-xl border border-subtle bg-surface shadow-2xl backdrop-blur-md animate-fade-in">
                   {isSearching ? (
                     <div className="p-4 text-sm text-text-secondary text-center">Searching...</div>
                   ) : searchResults.length === 0 ? (

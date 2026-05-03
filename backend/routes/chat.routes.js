@@ -4,6 +4,7 @@ import * as authMiddleware from '../middleware/auth.middleware.js';
 import {
   createChatController,
   deleteChatController,
+  deleteMessageController,
   listChatsController,
   listMessagesController,
   sendChatMessageController,
@@ -45,6 +46,13 @@ router.post(
     .isLength({ max: 120 })
     .withMessage('Client message id is too long'),
   sendChatMessageController,
+);
+
+router.delete(
+  '/:chatId/messages/:messageId',
+  param('chatId').isMongoId().withMessage('Chat must be a valid id'),
+  param('messageId').isMongoId().withMessage('Message must be a valid id'),
+  deleteMessageController,
 );
 
 router.delete(

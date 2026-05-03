@@ -4,6 +4,7 @@ import userModel from '../models/user.model.js';
 import {
   createAiMessage,
   createUserMessage,
+  deleteMessage,
   parseAiCommand,
   getRecentChatMessages,
   getChatForUser,
@@ -173,13 +174,14 @@ export function initSocket(server) {
       if (chatId) socket.broadcast.to(chatRoom(chatId)).emit('typing:stop', { chatId, userId });
     });
 
-    socket.on('message:send', async ({ chatId, content, clientMessageId }, ack) => {
+    socket.on('message:send', async ({ chatId, content, clientMessageId, replyTo }, ack) => {
       try {
         const { message, duplicate, chat } = await createUserMessage({
           chatId,
           senderId: userId,
           content,
           clientMessageId,
+          replyTo: replyTo || null,
         });
 
         socket.join(chatRoom(chatId));
@@ -192,6 +194,25 @@ export function initSocket(server) {
         }
 
         ack?.({ ok: true, message });
+      } catch (error) {
+        ack?.({ ok: false, error: error.message });
+      }
+    });
+
+    socket.on('message:delete', async ({ messageId }, ack) => {
+      try {
+        const deletedMessage = await deleteMessage({
+          messageId,
+          userId,
+        });
+
+        const chatId = deletedMessage.chat.toString();
+        io.to(chatRoom(chatId)).emit('message:deleted', {
+          messageId: deletedMessage._id,
+          chatId,
+        });
+
+        ack?.({ ok: true });
       } catch (error) {
         ack?.({ ok: false, error: error.message });
       }

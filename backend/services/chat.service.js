@@ -159,6 +159,11 @@ export async function listMessagesForChat({ chatId, userId }) {
 
   return Message.find({ chat: chatId })
     .populate('sender', 'name email')
+    .populate({
+      path: 'replyTo',
+      select: 'content sender role isDeleted',
+      populate: { path: 'sender', select: 'name email' },
+    })
     .sort({ createdAt: 1 });
 }
 
@@ -166,6 +171,11 @@ export async function getRecentChatMessages(chatId, limit = 20) {
   assertValidObjectId(chatId, 'Chat');
   return Message.find({ chat: chatId })
     .populate('sender', 'name email')
+    .populate({
+      path: 'replyTo',
+      select: 'content sender role isDeleted',
+      populate: { path: 'sender', select: 'name email' },
+    })
     .sort({ createdAt: -1 })
     .limit(limit)
     .then(messages => messages.reverse());
@@ -188,6 +198,7 @@ export async function createUserMessage({
   senderId,
   content,
   clientMessageId = null,
+  replyTo = null,
 }) {
   const chat = await getChatForUser(chatId, senderId);
 
@@ -195,10 +206,26 @@ export async function createUserMessage({
 
   if (clientMessageId) {
     const existingMessage = await Message.findOne({ chat: chatId, clientMessageId })
-      .populate('sender', 'name email');
+      .populate('sender', 'name email')
+      .populate({
+        path: 'replyTo',
+        select: 'content sender role isDeleted',
+        populate: { path: 'sender', select: 'name email' },
+      });
 
     if (existingMessage) {
       return { message: existingMessage, duplicate: true, chat };
+    }
+  }
+
+  // Validate replyTo belongs to the same chat if provided
+  if (replyTo) {
+    assertValidObjectId(replyTo, 'ReplyTo message');
+    const parentMessage = await Message.findOne({ _id: replyTo, chat: chatId });
+    if (!parentMessage) {
+      const error = new Error('Replied message not found in this chat');
+      error.statusCode = 404;
+      throw error;
     }
   }
 
@@ -208,12 +235,49 @@ export async function createUserMessage({
     role: 'user',
     content: normalizedContent,
     clientMessageId,
+    replyTo: replyTo || null,
   });
 
   await updateLastMessage(message);
   await message.populate('sender', 'name email');
+  await message.populate({
+    path: 'replyTo',
+    select: 'content sender role isDeleted',
+    populate: { path: 'sender', select: 'name email' },
+  });
 
   return { message, duplicate: false, chat };
+}
+
+export async function deleteMessage({ messageId, userId }) {
+  assertValidObjectId(messageId, 'Message');
+
+  const message = await Message.findById(messageId);
+
+  if (!message) {
+    const error = new Error('Message not found');
+    error.statusCode = 404;
+    throw error;
+  }
+
+  // Only the sender can delete their own message
+  if (normalizeId(message.sender) !== normalizeId(userId)) {
+    const error = new Error('You can only delete your own messages');
+    error.statusCode = 403;
+    throw error;
+  }
+
+  if (message.isDeleted) {
+    const error = new Error('Message is already deleted');
+    error.statusCode = 400;
+    throw error;
+  }
+
+  message.isDeleted = true;
+  message.content = 'This message was deleted';
+  await message.save();
+
+  return message;
 }
 
 export async function createAiMessage({

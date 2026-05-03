@@ -4,6 +4,7 @@ import {
   createChat,
   createUserMessage,
   deleteChatForUser,
+  deleteMessage,
   parseAiCommand,
   getRecentChatMessages,
   isAiMessage,
@@ -135,6 +136,29 @@ export const deleteChatController = async (req, res) => {
     emitChatDeleted(io, req.params.chatId, req.user.id, hardDeleted, participants);
 
     res.status(200).json({ deleted: true, hardDeleted });
+  } catch (error) {
+    handleControllerError(res, error);
+  }
+};
+
+export const deleteMessageController = async (req, res) => {
+  if (!handleValidation(req, res)) return;
+
+  try {
+    const io = req.app.get('io');
+    const deletedMessage = await deleteMessage({
+      messageId: req.params.messageId,
+      userId: req.user.id,
+    });
+
+    // Broadcast soft-delete to all clients in the chat room
+    const chatId = deletedMessage.chat.toString();
+    io?.to(`chat:${chatId}`).emit('message:deleted', {
+      messageId: deletedMessage._id,
+      chatId,
+    });
+
+    res.status(200).json({ deleted: true, message: deletedMessage });
   } catch (error) {
     handleControllerError(res, error);
   }

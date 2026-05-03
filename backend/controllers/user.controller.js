@@ -5,12 +5,18 @@ import redisClient from '../services/redis.service.js';
 import { listDevelopersForUser } from '../services/chat.service.js';
 
 function setAuthCookie(res, token) {
+  const isProduction = process.env.NODE_ENV === 'production' ||
+    process.env.RENDER === 'true' ||
+    (process.env.CLIENT_URL && process.env.CLIENT_URL.startsWith('https'));
+
   res.cookie('token', token, {
     httpOnly: true,
-    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    sameSite: isProduction ? 'none' : 'lax',
+    secure: isProduction,
     maxAge: 24 * 60 * 60 * 1000,
   });
+
+  console.log('[Auth] Cookie set with secure=%s sameSite=%s', isProduction, isProduction ? 'none' : 'lax');
 }
 
 function getToken(req) {
@@ -84,6 +90,7 @@ export const loginController = async (req, res) => {
 
     setAuthCookie(res, token);
 
+    console.log('[Auth] Login successful for', email);
     res.status(200).json({ user, token });
   } catch (error) {
     console.error('Login failed:', error.message);
@@ -116,10 +123,14 @@ export const logoutController = async (req, res) => {
       await redisClient.set(token, 'logout', 'EX', 60 * 60 * 24);
     }
 
+    const isProduction = process.env.NODE_ENV === 'production' ||
+      process.env.RENDER === 'true' ||
+      (process.env.CLIENT_URL && process.env.CLIENT_URL.startsWith('https'));
+
     res.clearCookie('token', {
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      sameSite: isProduction ? 'none' : 'lax',
+      secure: isProduction,
     });
     res.status(200).json({
       message: 'Logged out successfully',

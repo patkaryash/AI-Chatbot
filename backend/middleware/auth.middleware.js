@@ -14,6 +14,12 @@ export const authUser = async (req, res, next) => {
   try {
     const token = getToken(req);
 
+    console.log('[Auth Middleware] %s %s | cookie=%s bearer=%s',
+      req.method, req.path,
+      req.cookies?.token ? 'present' : 'missing',
+      req.headers.authorization ? 'present' : 'missing'
+    );
+
     if (!token) {
       return res.status(401).send({ error: 'Unauthorized User' });
     }

@@ -2,7 +2,7 @@
 
 ## What This Project Does
 
-This is a developer-focused real-time chat platform with AI assistance built into the conversation. It is not a standalone chatbot. Developers can create direct chats with other registered users, exchange live messages, reload complete message history after login, and call the AI assistant in the same thread by starting a message with `@ai`.
+This is a developer-focused real-time chat platform with AI assistance built into the conversation. It features a helpful, general-purpose AI assistant. Developers can create direct chats with other registered users, exchange live messages, reply to specific messages, soft-delete their own messages, reload complete message history after login, and call the AI assistant in the same thread by starting a message with `@ai`.
 
 ## Architecture
 
@@ -75,6 +75,8 @@ AI Service
 - Real-time reliability: messages are persisted before broadcasting, so refreshes and reconnects recover the full thread.
 - Duplicate prevention: client message ids are indexed per chat and reused sends return the existing message.
 - Demo resilience: AI has a local fallback when Gemini credentials are unavailable.
+- Complex Message Interactions: Implemented robust logic for message replies, maintaining references even when the original message is soft-deleted.
+- Production Security & Deployment: Configured restrictive cross-origin resource sharing (CORS), secure cross-site cookies, request rate limiting, data sanitization, and strict input validation for safe public deployment.
 
 ## Interview Talking Points
 

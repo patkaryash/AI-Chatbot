@@ -10,9 +10,12 @@ The current implementation is Node.js/Express on the backend and React/Vite on t
 - Dashboard chat list scoped to the logged-in user
 - Full persisted chat history on thread open
 - Socket.IO real-time messaging with one room per chat
+- Message interaction capabilities including replying to specific messages and soft-deleting messages
 - `@ai` trigger inside normal chats, with AI replies broadcast to both users
 - MongoDB persistence for users, chats, and messages
-- JWT authentication with HTTP-only cookie support and bearer token fallback
+- JWT authentication with HTTP-only secure cookie support and bearer token fallback
+- Robust security including Helmet, rate limiting, input validation, and data sanitization
+- Production-ready CORS configuration for cross-origin deployments
 - Optional Redis logout token blacklist
 - Gemini integration with local fallback responses for credential-free demos
 

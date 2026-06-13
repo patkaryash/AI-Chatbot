@@ -73,7 +73,7 @@ Backend `backend/.env`:
 ```env
 PORT=3000
 CLIENT_URL=http://localhost:5173
-MONGODB_URI=mongodb://127.0.0.1:27017/developer_chat_ai
+MONGODB_URI=mongodb://127.0.0.1:27017/DATABASE_NAME
 MONGODB_SERVER_SELECTION_TIMEOUT_MS=5000
 JWT_SECRET=replace-with-a-long-random-secret
 JWT_EXPIRES_IN=24h

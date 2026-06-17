@@ -52,10 +52,12 @@ userSchema.methods.isValidPassword = function isValidPassword(password) {
 userSchema.methods.generateJWT = function generateJWT() {
   return jwt.sign(
     { id: this._id.toString(), email: this.email, name: this.name },
-    process.env.JWT_SECRET || 'dev-only-change-me',
+    process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '24h' },
   );
 };
+
+userSchema.index({ lastSeen: -1 });
 
 const User = mongoose.model('user', userSchema);
 

@@ -61,6 +61,7 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
   const senderId = item.sender?._id || item.sender;
   const isMine = senderId === currentUser?.id || senderId === currentUser?._id;
   const isAi = item.role === "ai";
+  const [copied, setCopied] = useState(false);
 
   const alignmentClass = isMine ? "ml-auto flex-row-reverse" : "";
 
@@ -78,6 +79,16 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
         ? "border border-accent/30 bg-accent/10 text-accent/10"
         : "border border-subtle bg-bubble-received text-slate-100";
   }
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(item.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  };
 
   return (
     <div className={`group/msg relative flex items-start gap-2 ${alignmentClass} animate-slide-up mb-1`}>
@@ -131,6 +142,23 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
       {!item.isDeleted && (
         <div className="flex shrink-0 items-center gap-1 self-center opacity-0 transition-opacity duration-150 group-hover/msg:opacity-100">
           <button
+            className={`rounded-full p-1.5 transition hover:bg-surface-hover ${copied ? "text-emerald-400" : "text-text-secondary hover:text-white"}`}
+            onClick={handleCopy}
+            title={copied ? "Copied!" : "Copy"}
+            type="button"
+          >
+            {copied ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
+                <path fillRule="evenodd" d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2v-4a2 2 0 00-2-2h-4V5zm3 15a1 1 0 100-2 1 1 0 000 2zm6-2a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
+          <button
             className="rounded-full p-1.5 text-text-secondary transition hover:bg-surface-hover hover:text-white"
             onClick={() => onReply(item)}
             title="Reply"
@@ -148,7 +176,7 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
               type="button"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.519.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.519.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l-.3-7.5z" clipRule="evenodd" />
               </svg>
             </button>
           )}
@@ -157,7 +185,6 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
     </div>
   );
 });
-
 const Home = () => {
   const token = useMemo(() => localStorage.getItem("authToken"), []);
   const navigate = useNavigate();
@@ -1044,6 +1071,20 @@ const Home = () => {
                       <path fillRule="evenodd" d="M7.793 2.232a.75.75 0 01-.025 1.06L3.622 7.25h10.003a5.375 5.375 0 010 10.75H10.75a.75.75 0 010-1.5h2.875a3.875 3.875 0 000-7.75H3.622l4.146 3.957a.75.75 0 01-1.036 1.085l-5.5-5.25a.75.75 0 010-1.085l5.5-5.25a.75.75 0 011.06.025z" clipRule="evenodd" />
                     </svg>
                     Reply
+                  </button>
+                  <button
+                    className="flex w-full items-center gap-2 px-3 py-2 rounded-lg text-left text-sm font-medium text-text-primary transition hover:bg-surface-hover hover:text-accent"
+                    onClick={() => {
+                      navigator.clipboard.writeText(contextMenu.message.content).catch(err => console.error("Copy failed:", err));
+                      setContextMenu(null);
+                    }}
+                    type="button"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                      <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
+                      <path fillRule="evenodd" d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2v-4a2 2 0 00-2-2h-4V5zm3 15a1 1 0 100-2 1 1 0 000 2zm6-2a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                    </svg>
+                    Copy
                   </button>
                   {contextMenu.isMine && (
                     <button

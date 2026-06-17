@@ -54,6 +54,8 @@ messageSchema.index(
   { unique: true, partialFilterExpression: { clientMessageId: { $type: 'string' } } },
 );
 messageSchema.index({ chat: 1, createdAt: 1 });
+messageSchema.index({ sender: 1 });
+messageSchema.index({ sender: 1, createdAt: -1 });
 
 const Message = mongoose.model('message', messageSchema);
 

@@ -66,6 +66,8 @@ export const listMessagesController = async (req, res) => {
     const messages = await listMessagesForChat({
       chatId: req.params.chatId,
       userId: req.user.id,
+      limit: req.query.limit,
+      offset: req.query.offset,
     });
 
     res.status(200).json({ messages });

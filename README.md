@@ -127,7 +127,7 @@ npm run lint
 npm run preview
 ```
 
-## Future Scope
+# Future Scope
 
 - Add WebContainer-powered code execution rooms for collaborative coding
 - Add typing indicators and read receipts

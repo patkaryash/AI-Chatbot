@@ -37,7 +37,7 @@ async function authenticateSocket(socket, next) {
       return next(new Error('Authentication required'));
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'dev-only-change-me');
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await userModel.findById(decoded.id).select('email');
 
     if (!user) {

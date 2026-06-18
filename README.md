@@ -1,5 +1,8 @@
 # Developer Chat Platform with AI Integration
 
+Verification update generated through Levi + CTO + Hermes workflow.
+
+
 A demo-ready real-time chat platform for developers. Users can register, start one-to-one chats with other developers, exchange live messages over WebSockets, and call the AI assistant inside the same shared thread with an `@ai` message.
 
 The current implementation is Node.js/Express on the backend and React/Vite on the frontend. The project prompt mentions Python, but this repository contains a JavaScript backend, so the audit refined the stack already present instead of rewriting it.

@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { body, param } from 'express-validator';
+import { body, param, query } from 'express-validator';
 import * as authMiddleware from '../middleware/auth.middleware.js';
 import {
   createChatController,
@@ -9,6 +9,7 @@ import {
   listMessagesController,
   sendChatMessageController,
 } from '../controllers/chat.controller.js';
+import { messageRateLimit, chatCreateRateLimit } from '../middleware/rate-limit.middleware.js';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.get('/', listChatsController);
 
 router.post(
   '/',
+  chatCreateRateLimit(),
   body('participantId')
     .isMongoId()
     .withMessage('Participant must be a valid user id'),
@@ -27,11 +29,22 @@ router.post(
 router.get(
   '/:chatId/messages',
   param('chatId').isMongoId().withMessage('Chat must be a valid id'),
+  query('limit')
+    .optional()
+    .isInt({ min: 1, max: 200 })
+    .withMessage('Limit must be between 1 and 200')
+    .toInt(),
+  query('offset')
+    .optional()
+    .isInt({ min: 0 })
+    .withMessage('Offset must be a non-negative integer')
+    .toInt(),
   listMessagesController,
 );
 
 router.post(
   '/:chatId/messages',
+  messageRateLimit(),
   param('chatId').isMongoId().withMessage('Chat must be a valid id'),
   body('message')
     .isString()

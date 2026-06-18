@@ -154,8 +154,12 @@ export async function deleteChatForUser(chatId, userId) {
   return { hardDeleted: true, participants: chat.participants };
 }
 
-export async function listMessagesForChat({ chatId, userId }) {
+export async function listMessagesForChat({ chatId, userId, limit = 50, offset = 0 }) {
   await getChatForUser(chatId, userId);
+
+  // Clamp limit to prevent abuse (max 200)
+  const clampedLimit = Math.min(Math.max(parseInt(limit, 10) || 50, 1), 200);
+  const clampedOffset = Math.max(parseInt(offset, 10) || 0, 0);
 
   return Message.find({ chat: chatId })
     .populate('sender', 'name email')
@@ -164,7 +168,9 @@ export async function listMessagesForChat({ chatId, userId }) {
       select: 'content sender role isDeleted',
       populate: { path: 'sender', select: 'name email' },
     })
-    .sort({ createdAt: 1 });
+    .sort({ createdAt: 1 })
+    .skip(clampedOffset)
+    .limit(clampedLimit);
 }
 
 export async function getRecentChatMessages(chatId, limit = 20) {

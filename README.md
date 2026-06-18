@@ -66,6 +66,14 @@ npm run dev
 
 Open `http://localhost:5173`.
 
+## Quick Setup
+
+1. Clone the repository.
+2. Install dependencies.
+3. Configure environment variables.
+4. Start the backend server.
+5. Start the frontend application.
+
 ## Environment Variables
 
 Backend `backend/.env`:

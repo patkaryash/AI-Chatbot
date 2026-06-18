@@ -61,6 +61,7 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
   const senderId = item.sender?._id || item.sender;
   const isMine = senderId === currentUser?.id || senderId === currentUser?._id;
   const isAi = item.role === "ai";
+  const [copied, setCopied] = useState(false);
 
   const alignmentClass = isMine ? "ml-auto flex-row-reverse" : "";
 
@@ -78,6 +79,16 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
         ? "border border-accent/30 bg-accent/10 text-accent/10"
         : "border border-subtle bg-bubble-received text-slate-100";
   }
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(item.content);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  };
 
   return (
     <div className={`group/msg relative flex items-start gap-2 ${alignmentClass} animate-slide-up mb-1`}>
@@ -131,6 +142,23 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
       {!item.isDeleted && (
         <div className="flex shrink-0 items-center gap-1 self-center opacity-0 transition-opacity duration-150 group-hover/msg:opacity-100">
           <button
+            className={`rounded-full p-1.5 transition hover:bg-surface-hover ${copied ? "text-emerald-400" : "text-text-secondary hover:text-white"}`}
+            onClick={handleCopy}
+            title={copied ? "Copied!" : "Copy"}
+            type="button"
+          >
+            {copied ? (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+              </svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
+                <path fillRule="evenodd" d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2v-4a2 2 0 00-2-2h-4V5zm3 15a1 1 0 100-2 1 1 0 000 2zm6-2a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+              </svg>
+            )}
+          </button>
+          <button
             className="rounded-full p-1.5 text-text-secondary transition hover:bg-surface-hover hover:text-white"
             onClick={() => onReply(item)}
             title="Reply"
@@ -148,7 +176,7 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
               type="button"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
-                <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.519.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l.3-7.5z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M8.75 1A2.75 2.75 0 006 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 10.23 1.482l.149-.022.841 10.518A2.75 2.75 0 007.596 19h4.807a2.75 2.75 0 002.742-2.53l.841-10.519.149.023a.75.75 0 00.23-1.482A41.03 41.03 0 0014 4.193V3.75A2.75 2.75 0 0011.25 1h-2.5zM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4zM8.58 7.72a.75.75 0 00-1.5.06l.3 7.5a.75.75 0 101.5-.06l-.3-7.5zm4.34.06a.75.75 0 10-1.5-.06l-.3 7.5a.75.75 0 101.5.06l-.3-7.5z" clipRule="evenodd" />
               </svg>
             </button>
           )}
@@ -157,7 +185,6 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
     </div>
   );
 });
-
 const Home = () => {
   const token = useMemo(() => localStorage.getItem("authToken"), []);
   const navigate = useNavigate();
@@ -191,6 +218,10 @@ const Home = () => {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const [isAutoScroll, setIsAutoScroll] = useState(true);
+  const [messageOffset, setMessageOffset] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const MESSAGES_LIMIT = 50;
 
   const activeChat = chats.find((chat) => chat._id === activeChatId);
 
@@ -205,6 +236,11 @@ const Home = () => {
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
     setIsAutoScroll(isNearBottom);
+
+    // Load more messages when scrolling near the top
+    if (scrollTop < 100 && hasMoreMessages && !isLoadingMore) {
+      loadMoreMessages();
+    }
   }
 
   function mergeChat(chat) {
@@ -227,6 +263,35 @@ const Home = () => {
 
       return [...currentMessages, incomingMessage];
     });
+  }
+
+  function loadMoreMessages() {
+    if (!activeChatId || isLoadingMore || !hasMoreMessages) return;
+
+    setIsLoadingMore(true);
+    axios
+      .get(`/chat/${activeChatId}/messages?limit=${MESSAGES_LIMIT}&offset=${messageOffset}`)
+      .then((res) => {
+        const loadedMessages = res.data.messages || [];
+        if (loadedMessages.length === 0) {
+          setHasMoreMessages(false);
+        } else {
+          setMessages((current) => {
+            // Prepend older messages, avoiding duplicates
+            const existingIds = new Set(current.map((m) => m._id));
+            const newMessages = loadedMessages.filter((m) => !existingIds.has(m._id));
+            return [...newMessages, ...current];
+          });
+          setMessageOffset((prev) => prev + loadedMessages.length);
+          setHasMoreMessages(loadedMessages.length === MESSAGES_LIMIT);
+        }
+      })
+      .catch((err) => {
+        setError(err.response?.data?.error || "Unable to load more messages.");
+      })
+      .finally(() => {
+        setIsLoadingMore(false);
+      });
   }
 
   function softDeleteMessage(messageId) {
@@ -393,6 +458,8 @@ const Home = () => {
   useEffect(() => {
     if (!activeChatId || !token) {
       setMessages([]);
+      setMessageOffset(0);
+      setHasMoreMessages(true);
       return undefined;
     }
 
@@ -406,11 +473,13 @@ const Home = () => {
     });
 
     axios
-      .get(`/chat/${activeChatId}/messages`)
+      .get(`/chat/${activeChatId}/messages?limit=${MESSAGES_LIMIT}&offset=0`)
       .then((res) => {
         if (isMounted) {
           const loadedMessages = res.data.messages || [];
           setMessages(loadedMessages);
+          setMessageOffset(loadedMessages.length);
+          setHasMoreMessages(loadedMessages.length === MESSAGES_LIMIT);
           
           // Find unread messages from others and mark them as read
           const unreadIds = loadedMessages
@@ -853,7 +922,11 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="flex-1 space-y-2 overflow-y-auto px-4 sm:px-8 py-6 relative z-10">
+            <div
+              ref={messagesContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 space-y-2 overflow-y-auto px-4 sm:px-8 py-6 relative z-10"
+            >
               {!activeChat && (
                 <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto">
                   <div className="w-16 h-16 rounded-2xl bg-surface-hover border border-subtle flex items-center justify-center mb-6 shadow-2xl">
@@ -868,7 +941,13 @@ const Home = () => {
                 </div>
               )}
 
-              {activeChat && messages.length === 0 && (
+              {activeChat && isLoadingMore && (
+                <div className="flex justify-center py-4">
+                  <div className="w-5 h-5 border-2 border-text-muted border-t-accent rounded-full animate-spin"></div>
+                </div>
+              )}
+
+              {activeChat && messages.length === 0 && !isLoadingMore && (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <p className="text-sm leading-relaxed text-text-secondary bg-surface-hover px-4 py-2 rounded-full border border-subtle">
                     No messages yet. Send a message or try <span className="text-accent font-mono">@ai explain this project architecture</span>
@@ -992,6 +1071,20 @@ const Home = () => {
                       <path fillRule="evenodd" d="M7.793 2.232a.75.75 0 01-.025 1.06L3.622 7.25h10.003a5.375 5.375 0 010 10.75H10.75a.75.75 0 010-1.5h2.875a3.875 3.875 0 000-7.75H3.622l4.146 3.957a.75.75 0 01-1.036 1.085l-5.5-5.25a.75.75 0 010-1.085l5.5-5.25a.75.75 0 011.06.025z" clipRule="evenodd" />
                     </svg>
                     Reply
+                  </button>
+                  <button
+                    className="flex w-full items-center gap-2 px-3 py-2 rounded-lg text-left text-sm font-medium text-text-primary transition hover:bg-surface-hover hover:text-accent"
+                    onClick={() => {
+                      navigator.clipboard.writeText(contextMenu.message.content).catch(err => console.error("Copy failed:", err));
+                      setContextMenu(null);
+                    }}
+                    type="button"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-4 w-4">
+                      <path d="M8 2a1 1 0 000 2h2a1 1 0 100-2H8z" />
+                      <path fillRule="evenodd" d="M3 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v6h-4a2 2 0 00-2 2v4a2 2 0 002 2h6a2 2 0 002-2v-4a2 2 0 00-2-2h-4V5zm3 15a1 1 0 100-2 1 1 0 000 2zm6-2a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                    </svg>
+                    Copy
                   </button>
                   {contextMenu.isMine && (
                     <button

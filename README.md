@@ -128,3 +128,7 @@ npm run preview
 - Add file/code snippet attachments
 - Add automated integration tests for Socket.IO events
 - Add production Socket.IO scaling with a Redis adapter
+
+## Contributing
+
+Contributions are welcome. Please create a feature branch, make your changes, and submit a pull request for review.

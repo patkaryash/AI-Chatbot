@@ -4,20 +4,13 @@ A demo-ready real-time chat platform for developers. Users can register, start o
 
 The current implementation is Node.js/Express on the backend and React/Vite on the frontend. The project prompt mentions Python, but this repository contains a JavaScript backend, so the audit refined the stack already present instead of rewriting it.
 
-## Key Features
+## Features
 
-- Developer-to-developer chat creation with participant assignment
-- Dashboard chat list scoped to the logged-in user
-- Full persisted chat history on thread open
-- Socket.IO real-time messaging with one room per chat
-- Message interaction capabilities including replying to specific messages and soft-deleting messages
-- `@ai` trigger inside normal chats, with AI replies broadcast to both users
-- MongoDB persistence for users, chats, and messages
-- JWT authentication with HTTP-only secure cookie support and bearer token fallback
-- Robust security including Helmet, rate limiting, input validation, and data sanitization
-- Production-ready CORS configuration for cross-origin deployments
-- Optional Redis logout token blacklist
-- Gemini integration with local fallback responses for credential-free demos
+- Real-time developer chat
+- AI-powered chat assistance
+- Friend request system
+- User authentication
+- Profile customization
 
 ## Tech Stack
 

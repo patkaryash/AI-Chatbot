@@ -22,6 +22,8 @@ const requestSchema = new mongoose.Schema({
 
 // Prevent duplicate requests between the same users
 requestSchema.index({ sender: 1, receiver: 1 }, { unique: true });
+requestSchema.index({ receiver: 1, status: 1 });
+requestSchema.index({ sender: 1, status: 1 });
 
 const Request = mongoose.model('request', requestSchema);
 

@@ -191,6 +191,10 @@ const Home = () => {
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
   const [isAutoScroll, setIsAutoScroll] = useState(true);
+  const [messageOffset, setMessageOffset] = useState(0);
+  const [hasMoreMessages, setHasMoreMessages] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const MESSAGES_LIMIT = 50;
 
   const activeChat = chats.find((chat) => chat._id === activeChatId);
 
@@ -205,6 +209,11 @@ const Home = () => {
     const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
     const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
     setIsAutoScroll(isNearBottom);
+
+    // Load more messages when scrolling near the top
+    if (scrollTop < 100 && hasMoreMessages && !isLoadingMore) {
+      loadMoreMessages();
+    }
   }
 
   function mergeChat(chat) {
@@ -227,6 +236,35 @@ const Home = () => {
 
       return [...currentMessages, incomingMessage];
     });
+  }
+
+  function loadMoreMessages() {
+    if (!activeChatId || isLoadingMore || !hasMoreMessages) return;
+
+    setIsLoadingMore(true);
+    axios
+      .get(`/chat/${activeChatId}/messages?limit=${MESSAGES_LIMIT}&offset=${messageOffset}`)
+      .then((res) => {
+        const loadedMessages = res.data.messages || [];
+        if (loadedMessages.length === 0) {
+          setHasMoreMessages(false);
+        } else {
+          setMessages((current) => {
+            // Prepend older messages, avoiding duplicates
+            const existingIds = new Set(current.map((m) => m._id));
+            const newMessages = loadedMessages.filter((m) => !existingIds.has(m._id));
+            return [...newMessages, ...current];
+          });
+          setMessageOffset((prev) => prev + loadedMessages.length);
+          setHasMoreMessages(loadedMessages.length === MESSAGES_LIMIT);
+        }
+      })
+      .catch((err) => {
+        setError(err.response?.data?.error || "Unable to load more messages.");
+      })
+      .finally(() => {
+        setIsLoadingMore(false);
+      });
   }
 
   function softDeleteMessage(messageId) {
@@ -393,6 +431,8 @@ const Home = () => {
   useEffect(() => {
     if (!activeChatId || !token) {
       setMessages([]);
+      setMessageOffset(0);
+      setHasMoreMessages(true);
       return undefined;
     }
 
@@ -406,11 +446,13 @@ const Home = () => {
     });
 
     axios
-      .get(`/chat/${activeChatId}/messages`)
+      .get(`/chat/${activeChatId}/messages?limit=${MESSAGES_LIMIT}&offset=0`)
       .then((res) => {
         if (isMounted) {
           const loadedMessages = res.data.messages || [];
           setMessages(loadedMessages);
+          setMessageOffset(loadedMessages.length);
+          setHasMoreMessages(loadedMessages.length === MESSAGES_LIMIT);
           
           // Find unread messages from others and mark them as read
           const unreadIds = loadedMessages
@@ -853,7 +895,11 @@ const Home = () => {
               </p>
             </div>
 
-            <div className="flex-1 space-y-2 overflow-y-auto px-4 sm:px-8 py-6 relative z-10">
+            <div
+              ref={messagesContainerRef}
+              onScroll={handleScroll}
+              className="flex-1 space-y-2 overflow-y-auto px-4 sm:px-8 py-6 relative z-10"
+            >
               {!activeChat && (
                 <div className="flex flex-col items-center justify-center h-full text-center max-w-md mx-auto">
                   <div className="w-16 h-16 rounded-2xl bg-surface-hover border border-subtle flex items-center justify-center mb-6 shadow-2xl">
@@ -868,7 +914,13 @@ const Home = () => {
                 </div>
               )}
 
-              {activeChat && messages.length === 0 && (
+              {activeChat && isLoadingMore && (
+                <div className="flex justify-center py-4">
+                  <div className="w-5 h-5 border-2 border-text-muted border-t-accent rounded-full animate-spin"></div>
+                </div>
+              )}
+
+              {activeChat && messages.length === 0 && !isLoadingMore && (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <p className="text-sm leading-relaxed text-text-secondary bg-surface-hover px-4 py-2 rounded-full border border-subtle">
                     No messages yet. Send a message or try <span className="text-accent font-mono">@ai explain this project architecture</span>

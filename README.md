@@ -135,3 +135,5 @@ npm run preview
 - Add file/code snippet attachments
 - Add automated integration tests for Socket.IO events
 - Add production Socket.IO scaling with a Redis adapter
+
+<!-- OPE-50: PR workflow test comment -->

@@ -3,6 +3,133 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "../config/axios";
 import { createSocket } from "../config/socket";
 
+/* ─── Code-block helpers ─── */
+const CODE_BLOCK_REGEX = /```(\w+)?
+?([\s\S]*?)```/g;
+const INLINE_CODE_REGEX = /`([^`]+)`/g;
+
+function extractCodeBlocks(text) {
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = CODE_BLOCK_REGEX.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push({ type: "text", content: text.slice(lastIndex, match.index) });
+    }
+    parts.push({ type: "code", language: match[1] || "", code: match[2] });
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push({ type: "text", content: text.slice(lastIndex) });
+  }
+
+  return parts.length ? parts : [{ type: "text", content: text }];
+}
+
+function renderInlineCode(text) {
+  const parts = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = INLINE_CODE_REGEX.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(match.input.slice(lastIndex, match.index));
+    }
+    parts.push(
+      React.createElement(
+        "code",
+        {
+          key: `ic-${match.index}`,
+          className:
+            "rounded px-1 py-0.5 text-xs font-mono bg-black/30 text-accent border border-accent/20",
+        },
+        match[1]
+      )
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length ? parts : text;
+}
+
+function CodeBlock({ code, language }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(code);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Copy failed:", err);
+    }
+  };
+
+  return (
+    <div className="relative mt-2 mb-2 rounded-lg border border-subtle bg-black/40 overflow-hidden">
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-3 py-1.5 bg-surface-hover/80 border-b border-subtle">
+        <span className="text-[10px] font-mono uppercase tracking-wider text-text-muted">
+          {language || "code"}
+        </span>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[10px] font-medium text-text-secondary transition hover:bg-surface-hover hover:text-white"
+          type="button"
+          title="Copy to clipboard"
+        >
+          {copied ? (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5 text-emerald-400">
+                <path fillRule="evenodd" d="M16.704 4.153a.75.75 0 01.143 1.052l-8 10.5a.75.75 0 01-1.127.075l-4.5-4.5a.75.75 0 011.06-1.06l3.894 3.893 7.48-9.817a.75.75 0 011.05-.143z" clipRule="evenodd" />
+              </svg>
+              <span className="text-emerald-400">Copied!</span>
+            </>
+          ) : (
+            <>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="h-3.5 w-3.5">
+                <path d="M7 3.5A1.5 1.5 0 018.5 2h3.879a1.5 1.5 0 011.06.44l3.122 3.12A1.5 1.5 0 0117 6.621V14.5a1.5 1.5 0 01-1.5 1.5h-3.797a1.5 1.5 0 01-1.06-.44l-3.122-3.12A1.5 1.5 0 017 11.379V3.5z" />
+                <path d="M4.5 6A1.5 1.5 0 003 7.5v9A1.5 1.5 0 004.5 18h7a1.5 1.5 0 001.5-1.5v-5.879a.5 1.5 0 00-.44-1.06L9.122 6.44A1.5 1.5 0 008.062 6H4.5z" />
+              </svg>
+              Copy
+            </>
+          )}
+        </button>
+      </div>
+      {/* Code body */}
+      <pre className="overflow-x-auto p-3 text-xs font-mono leading-relaxed text-slate-300">
+        <code>{code}</code>
+      </pre>
+    </div>
+  );
+}
+
+function MessageContent({ content }) {
+  const parts = extractCodeBlocks(content);
+
+  return (
+    <>
+      {parts.map((part, idx) => {
+        if (part.type === "code") {
+          return <CodeBlock key={idx} code={part.code} language={part.language} />;
+        }
+        return (
+          <span key={idx} className="whitespace-pre-wrap break-words">
+            {renderInlineCode(part.content)}
+          </span>
+        );
+      })}
+    </>
+  );
+}
+
+
 function uniqueById(items) {
   return Array.from(new Map(items.map((item) => [item._id, item])).values());
 }
@@ -113,7 +240,7 @@ const MessageItem = memo(({ item, currentUser, onContextMenu, onReply, onDelete,
           </div>
         )}
         
-        <p className="whitespace-pre-wrap break-words">{item.content}</p>
+        <MessageContent content={item.content} />
         
         {isAi && item.provider && !item.isDeleted && (
           <p className="mt-2 text-[10px] uppercase tracking-wider font-mono text-accent">

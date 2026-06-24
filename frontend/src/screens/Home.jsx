@@ -260,7 +260,7 @@ const Home = () => {
         }
       })
       .catch((err) => {
-        setError(err.response?.data?.error || "Unable to load more messages.");
+        setError(err.customMessage || err.response?.data?.error || "Unable to load more messages.");
       })
       .finally(() => {
         setIsLoadingMore(false);
@@ -293,7 +293,7 @@ const Home = () => {
         removeChat(chatId);
       })
       .catch((err) => {
-        setError(err.response?.data?.error || "Unable to delete chat.");
+        setError(err.customMessage || err.response?.data?.error || "Unable to delete chat.");
       });
   }
 
@@ -332,7 +332,7 @@ const Home = () => {
           return;
         }
 
-        setError(err.response?.data?.error || "Unable to load your chat workspace.");
+        setError(err.customMessage || err.response?.data?.error || "Unable to load your chat workspace.");
       })
       .finally(() => {
         if (isMounted) setIsLoading(false);
@@ -353,7 +353,7 @@ const Home = () => {
     socket.on("disconnect", () => setSocketStatus("offline"));
     socket.on("connect_error", (err) => {
       setSocketStatus("offline");
-      setError(err.message || "Real-time connection failed.");
+      setError(err.customMessage || err.message || "Real-time connection failed.");
     });
     socket.on("chat:created", mergeChat);
     socket.on("chat:updated", updateChatSummary);
@@ -506,7 +506,7 @@ const Home = () => {
         setSearchResults([]);
       })
       .catch(err => {
-        setError(err.response?.data?.error || "Unable to send request.");
+        setError(err.customMessage || err.response?.data?.error || "Unable to send request.");
       });
   }
 
@@ -520,7 +520,7 @@ const Home = () => {
         }
         setShowNotifications(false);
       })
-      .catch(err => setError(err.response?.data?.error || "Unable to accept request."));
+      .catch(err => setError(err.customMessage || err.response?.data?.error || "Unable to accept request."));
   }
 
   function rejectRequest(requestId) {
@@ -528,7 +528,7 @@ const Home = () => {
       .then(() => {
         setPendingRequests(prev => prev.filter(req => req._id !== requestId));
       })
-      .catch(err => setError(err.response?.data?.error || "Unable to reject request."));
+      .catch(err => setError(err.customMessage || err.response?.data?.error || "Unable to reject request."));
   }
 
   function sendMessage(event) {
@@ -574,7 +574,7 @@ const Home = () => {
         (res.data.messages || []).forEach(appendMessage);
       })
       .catch((err) => {
-        setError(err.response?.data?.error || "Unable to send message.");
+        setError(err.customMessage || err.response?.data?.error || "Unable to send message.");
         setMessage(trimmedMessage);
       })
       .finally(() => {
@@ -601,7 +601,7 @@ const Home = () => {
         softDeleteMessage(messageId);
       })
       .catch((err) => {
-        setError(err.response?.data?.error || "Unable to delete message.");
+        setError(err.customMessage || err.response?.data?.error || "Unable to delete message.");
       });
   }, [activeChatId]);
 

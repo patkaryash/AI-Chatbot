@@ -86,7 +86,7 @@ const Login = () => {
         navigate("/");
       })
       .catch((err) => {
-        setServerError(err.response?.data?.error || "Unable to log in. Please try again.");
+        setServerError(err.customMessage || err.response?.data?.error || "Unable to log in. Please try again.");
       })
       .finally(() => {
         setIsSubmitting(false);

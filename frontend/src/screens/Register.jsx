@@ -93,7 +93,7 @@ const Register = () => {
         navigate("/");
       })
       .catch((err) => {
-        setServerError(err.response?.data?.error || "Unable to create an account. Please try again.");
+        setServerError(err.customMessage || err.response?.data?.error || "Unable to create an account. Please try again.");
       })
       .finally(() => {
         setIsSubmitting(false);

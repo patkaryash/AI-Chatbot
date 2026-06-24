@@ -73,7 +73,32 @@ export const loginController = async (req, res) => {
 
   try {
     const { email, password } = req.body;
-    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!email || typeof email !== 'string') {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    if (!password || typeof password !== 'string') {
+      return res.status(400).json({ error: 'Password is required' });
+    }
+
+    const trimmedEmail = email.trim();
+    if (!trimmedEmail) {
+      return res.status(400).json({ error: 'Email cannot be empty or whitespace only' });
+    }
+
+    const normalizedEmail = trimmedEmail.toLowerCase();
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailPattern.test(normalizedEmail)) {
+      return res.status(400).json({ error: 'Invalid email format' });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+    if (password.length > 128) {
+      return res.status(400).json({ error: 'Password must not exceed 128 characters' });
+    }
 
     const user = await userModel.findOne({ email: normalizedEmail }).select('+password');
 
@@ -91,7 +116,7 @@ export const loginController = async (req, res) => {
 
     setAuthCookie(res, token);
 
-    console.log('[Auth] Login successful for', email);
+    console.log('[Auth] Login successful for', normalizedEmail);
     res.status(200).json({ user, token });
   } catch (error) {
     console.error('Login failed:', error.message);

@@ -73,8 +73,9 @@ export const loginController = async (req, res) => {
 
   try {
     const { email, password } = req.body;
+    const normalizedEmail = email.trim().toLowerCase();
 
-    const user = await userModel.findOne({ email }).select('+password');
+    const user = await userModel.findOne({ email: normalizedEmail }).select('+password');
 
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });

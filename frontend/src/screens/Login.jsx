@@ -18,12 +18,17 @@ const initialForm = {
 function validateLoginForm(form) {
   const errors = {};
   const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const trimmedEmail = form.email.trim();
 
-  if (!emailPattern.test(form.email.trim())) {
+  if (!trimmedEmail) {
+    errors.email = "Email is required.";
+  } else if (!emailPattern.test(trimmedEmail)) {
     errors.email = "Enter a valid email address.";
   }
 
-  if (form.password.length < 6) {
+  if (!form.password) {
+    errors.password = "Password is required.";
+  } else if (form.password.length < 6) {
     errors.password = "Password must be at least 6 characters.";
   }
 

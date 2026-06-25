@@ -1,5 +1,8 @@
 # Developer Chat Platform with AI Integration
 
+A real-time developer chat platform with AI integration, built with Node.js/Express and React/Vite.
+
+
 A demo-ready real-time chat platform for developers. Users can register, start one-to-one chats with other developers, exchange live messages over WebSockets, and call the AI assistant inside the same shared thread with an `@ai` message.
 
 ## Project Overview

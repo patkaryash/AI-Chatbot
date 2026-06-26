@@ -1,6 +1,14 @@
 # Developer Chat Platform with AI Integration
 
+A real-time developer chat platform with AI integration, built with Node.js/Express and React/Vite.
+
+
 A demo-ready real-time chat platform for developers. Users can register, start one-to-one chats with other developers, exchange live messages over WebSockets, and call the AI assistant inside the same shared thread with an `@ai` message.
+
+## Project Overview
+
+This is a developer-focused real-time chat platform with AI assistance. Users can register, start one-to-one chats with other developers, exchange live messages over WebSockets, and invoke an AI assistant inside the same thread by sending a message starting with `@ai`. The platform features JWT-based authentication, MongoDB persistence, message replies, soft deletion, and a responsive React/Vite frontend with Tailwind CSS.
+
 
 The current implementation is Node.js/Express on the backend and React/Vite on the frontend. The project prompt mentions Python, but this repository contains a JavaScript backend, so the audit refined the stack already present instead of rewriting it.
 
@@ -135,3 +143,5 @@ npm run preview
 - Add file/code snippet attachments
 - Add automated integration tests for Socket.IO events
 - Add production Socket.IO scaling with a Redis adapter
+- Add dark mode and theme customization
+<!-- PR validation test comment - OPE-61 -->
